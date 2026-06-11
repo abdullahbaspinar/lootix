@@ -1,44 +1,58 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {Image, StyleSheet, Text, View} from 'react-native';
 import {LeaderboardUser} from '../constants/badges';
 import {colors} from '../constants/colors';
 
+const PROFIL = require('../assets/ui/profil.png');
+
 type PodiumProps = {
-  topThree: LeaderboardUser[];
+  topThree: LeaderboardUser[]; // [1.lik, 2.lik, 3.lük] (sira gore)
 };
 
-const PODIUM_COLORS = [colors.gold, colors.silver, colors.bronze];
-const PODIUM_HEIGHTS = [100, 80, 60];
-const PODIUM_ORDER = [1, 0, 2];
+// place: 0=1.lik, 1=2.lik, 2=3.lük
+const RING = ['#F2B705', '#4FA3E3', '#5FBF77']; // altın / mavi / yeşil
+const PILLAR_H = [128, 96, 84];
+const ORDER = [1, 0, 2]; // ekranda: 2.lik - 1.lik - 3.lük
 
 export function Podium({topThree}: PodiumProps) {
-  const ordered = PODIUM_ORDER.map(i => topThree[i]).filter(Boolean);
+  const ordered = ORDER.map(i => topThree[i]).filter(Boolean);
 
   return (
     <View style={styles.container}>
-      {ordered.map((user, index) => {
-        const originalIndex = PODIUM_ORDER[index];
+      {ordered.map(user => {
+        const place = topThree.indexOf(user); // 0,1,2
+        const isFirst = place === 0;
+        const size = isFirst ? 74 : 58;
+
         return (
           <View key={user.id} style={styles.column}>
-            {originalIndex === 0 && (
-              <Text style={styles.crown}>👑</Text>
-            )}
-            <View style={styles.avatar}>
-              <Text style={styles.initials}>{user.initials}</Text>
-            </View>
-            <Text style={styles.name} numberOfLines={1}>
-              {user.name}
-            </Text>
-            <Text style={styles.points}>{user.points} Puan</Text>
+            {isFirst && <Text style={styles.crown}>👑</Text>}
+
             <View
               style={[
-                styles.podium,
-                {
-                  height: PODIUM_HEIGHTS[originalIndex],
-                  backgroundColor: PODIUM_COLORS[originalIndex],
-                },
+                styles.avatarRing,
+                {width: size, height: size, borderRadius: size / 2, borderColor: RING[place]},
               ]}>
-              <Text style={styles.rank}>#{user.rank}</Text>
+              <Image
+                source={user.avatar || PROFIL}
+                style={{width: size - 8, height: size - 8, borderRadius: (size - 8) / 2}}
+              />
+              {!isFirst && (
+                <View style={[styles.rankDot, {backgroundColor: RING[place]}]}>
+                  <Text style={styles.rankDotText}>{user.rank}</Text>
+                </View>
+              )}
+            </View>
+
+            <View
+              style={[
+                styles.pillar,
+                {height: PILLAR_H[place], backgroundColor: isFirst ? colors.primary : colors.podium},
+              ]}>
+              <Text style={styles.name} numberOfLines={1}>{user.name}</Text>
+              <Text style={[styles.points, {color: isFirst ? colors.gold : RING[place]}]}>
+                {user.points}
+              </Text>
             </View>
           </View>
         );
@@ -52,55 +66,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 24,
-    gap: 8,
+    paddingHorizontal: 16,
+    gap: 10,
+    marginTop: 4,
+    marginBottom: 10,
   },
-  column: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  crown: {
-    fontSize: 20,
-    marginBottom: 4,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primary,
+  column: {flex: 1, alignItems: 'center'},
+  crown: {fontSize: 24, marginBottom: 2},
+  avatarRing: {
+    borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    backgroundColor: colors.card,
+    marginBottom: -16,
+    zIndex: 2,
   },
-  initials: {
-    color: colors.card,
-    fontSize: 14,
-    fontWeight: '700',
+  rankDot: {
+    position: 'absolute',
+    bottom: -4,
+    alignSelf: 'center',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.card,
   },
-  name: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 2,
-    maxWidth: 80,
-    textAlign: 'center',
-  },
-  points: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginBottom: 8,
-  },
-  podium: {
+  rankDotText: {color: colors.card, fontWeight: '800', fontSize: 11},
+  pillar: {
     width: '100%',
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    paddingTop: 24,
+    paddingBottom: 16,
   },
-  rank: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.card,
-  },
+  name: {color: colors.card, fontWeight: '700', fontSize: 13, maxWidth: '92%'},
+  points: {fontWeight: '900', fontSize: 18, marginTop: 2},
 });

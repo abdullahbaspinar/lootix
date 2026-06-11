@@ -3,16 +3,17 @@ import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../abdullah/navigation/types';
 import {ScreenHeader} from '../../abdullah/components/ScreenHeader';
+import {colors as abdullahColors} from '../../abdullah/constants/colors';
 import {LeaderboardRow} from '../components/LeaderboardRow';
 import {Podium} from '../components/Podium';
 import {LEADERBOARD} from '../constants/badges';
-import {colors} from '../constants/colors';
+import {colors, fonts} from '../constants/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Leaderboard'>;
 
 export function LeaderboardScreen({navigation}: Props) {
   const topThree = LEADERBOARD.filter(u => u.rank <= 3);
-  const rest = LEADERBOARD.filter(u => u.rank > 3);
+  const others = LEADERBOARD.filter(u => u.rank > 3 && !u.isCurrentUser);
   const currentUser = LEADERBOARD.find(u => u.isCurrentUser);
 
   return (
@@ -21,36 +22,47 @@ export function LeaderboardScreen({navigation}: Props) {
 
       <Text style={styles.title}>Liderlik Tablosu</Text>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}>
-        <Podium topThree={topThree} />
+      {/* Üst kısım gri zeminde: kürsü */}
+      <Podium topThree={topThree} />
 
-        {rest.map(user => (
-          <LeaderboardRow key={user.id} user={user} />
-        ))}
+      {/* Alt kısım beyaz panel: sıralama listesi + sabit kullanıcı satırı */}
+      <View style={styles.sheet}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.list}>
+          {others.map((user, i) => (
+            <LeaderboardRow
+              key={user.id}
+              user={user}
+              isLast={i === others.length - 1}
+            />
+          ))}
+        </ScrollView>
 
-        {currentUser && currentUser.rank > 3 && (
-          <LeaderboardRow user={currentUser} />
-        )}
-      </ScrollView>
+        {currentUser && <LeaderboardRow user={currentUser} />}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
+  container: {flex: 1, backgroundColor: abdullahColors.headerGray},
   title: {
-    fontSize: 22,
-    fontWeight: '700',
+    fontSize: 24,
+    fontFamily: fonts.bold, // Pixelify Sans (bağlıysa); değilse sistem fontu
     color: colors.text,
     textAlign: 'center',
-    marginBottom: 20,
+    marginTop: 4,
+    marginBottom: 10,
+    letterSpacing: 0.5,
   },
-  content: {
-    paddingBottom: 40,
+  sheet: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingTop: 12,
+    overflow: 'hidden',
   },
+  list: {paddingBottom: 8},
 });

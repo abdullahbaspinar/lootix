@@ -1,77 +1,72 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
 import {Badge} from '../constants/badges';
 import {colors} from '../constants/colors';
 
 type BadgeGridProps = {
   badges: Badge[];
+  onBadgePress: (badge: Badge) => void;
 };
 
-export function BadgeGrid({badges}: BadgeGridProps) {
-  const unlockedCount = badges.filter(b => b.unlocked).length;
-
+export function BadgeGrid({badges, onBadgePress}: BadgeGridProps) {
   return (
-    <View>
-      <Text style={styles.title}>
-        Rozetlerim {unlockedCount}/{badges.length}
-      </Text>
-      <View style={styles.grid}>
-        {badges.map(badge => (
+    <View style={styles.grid}>
+      {badges.map(badge => (
+        <Pressable
+          key={badge.id}
+          onPress={() => onBadgePress(badge)}
+          style={({pressed}) => [styles.cell, pressed && {opacity: 0.7}]}>
           <View
-            key={badge.id}
             style={[
-              styles.badge,
-              !badge.unlocked && styles.badgeLocked,
+              styles.circle,
+              badge.unlocked ? styles.unlocked : styles.lockedCircle,
             ]}>
-            <Text
-              style={[
-                styles.emoji,
-                !badge.unlocked && styles.emojiLocked,
-              ]}>
-              {badge.emoji}
-            </Text>
+            <Image
+              source={badge.image}
+              style={[styles.img, !badge.unlocked && {opacity: 0.5}]}
+              resizeMode="contain"
+            />
+            {!badge.unlocked && (
+              <>
+                <View style={styles.overlay} />
+                <View style={styles.lockBadge}>
+                  <Text style={styles.lockGlyph}>🔒</Text>
+                </View>
+              </>
+            )}
           </View>
-        ))}
-      </View>
+          <Text
+            numberOfLines={2}
+            style={[styles.label, !badge.unlocked && styles.labelLocked]}>
+            {badge.name}
+          </Text>
+        </Pressable>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.text,
-    paddingHorizontal: 20,
-    marginBottom: 16,
+  grid: {flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 8},
+  cell: {width: '33.33%', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 4},
+  circle: {
+    width: 78, height: 78, borderRadius: 39,
+    alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 20,
-    gap: 12,
-    justifyContent: 'flex-start',
+  unlocked: {
+    backgroundColor: colors.card, borderWidth: 2, borderColor: colors.primary,
+    shadowColor: colors.primary, shadowOpacity: 0.35, shadowRadius: 8,
+    shadowOffset: {width: 0, height: 3}, elevation: 4,
   },
-  badge: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.card,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+  lockedCircle: {backgroundColor: colors.lockedBg, borderWidth: 2, borderColor: colors.locked},
+  img: {width: 48, height: 48},
+  overlay: {...StyleSheet.absoluteFill, backgroundColor: colors.lockOverlay},
+  lockBadge: {
+    position: 'absolute', bottom: 6, right: 10, width: 24, height: 24, borderRadius: 12,
+    backgroundColor: colors.locked, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: colors.card,
   },
-  badgeLocked: {
-    backgroundColor: '#EEEEEE',
-  },
-  emoji: {
-    fontSize: 32,
-  },
-  emojiLocked: {
-    opacity: 0.35,
-  },
+  lockGlyph: {fontSize: 11},
+  label: {marginTop: 8, fontSize: 11, textAlign: 'center', color: colors.text, fontWeight: '600'},
+  labelLocked: {color: colors.textSecondary, fontWeight: '500'},
 });

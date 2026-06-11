@@ -5,6 +5,7 @@ import {AnalysisScreen} from '../../feyza/screens/AnalysisScreen';
 import {DistributionsScreen} from '../../feyza/screens/DistributionsScreen';
 import {SmartSuggestionsScreen} from '../../feyza/screens/SmartSuggestionsScreen';
 import {TransactionCalendarScreen} from '../../feyza/screens/TransactionCalendarScreen';
+import {AddAmountScreen} from '../../irem/screens/AddAmountScreen';
 import {AddExpenseGameScreen} from '../../irem/screens/AddExpenseGameScreen';
 import {AddGameScreen} from '../../irem/screens/AddGameScreen';
 import {CategorySelectionScreen} from '../../irem/screens/CategorySelectionScreen';
@@ -68,6 +69,7 @@ export function AppNavigator() {
           name="CategorySelection"
           component={CategorySelectionScreen}
         />
+        <Stack.Screen name="AddAmount" component={AddAmountScreen} />
         <Stack.Screen name="AddGame" component={AddGameScreen} />
         <Stack.Screen name="Goals" component={GoalsScreen} />
         <Stack.Screen name="Analysis" component={AnalysisScreen} />

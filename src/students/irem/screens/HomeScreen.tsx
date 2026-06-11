@@ -1,75 +1,107 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RootStackParamList} from '../../abdullah/navigation/types';
-import {GAMES} from '../../abdullah/constants/games';
-import {LogoPageLayout} from '../../abdullah/components/LogoPageLayout';
-import {colors as abdullahColors} from '../../abdullah/constants/colors';
 import {handleTabPress} from '../../abdullah/navigation/tabNavigation';
 import {BottomTabBar} from '../components/BottomTabBar';
-import {SpendingLineChart} from '../components/SpendingLineChart';
 import {colors} from '../constants/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
-export function HomeScreen({navigation}: Props) {
-  const lastGame = GAMES[0];
+export function HomeScreen({navigation, route}: Props) {
+  const insets = useSafeAreaInsets();
+  const [totalExpense, setTotalExpense] = useState(3650);
+
+  useEffect(() => {
+    const added = route.params?.newExpense;
+    if (added && added > 0) {
+      setTotalExpense(prev => prev + added);
+      navigation.setParams({newExpense: undefined});
+    }
+  }, [navigation, route.params?.newExpense]);
 
   return (
-    <View style={styles.container}>
-      <LogoPageLayout>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.greeting}>Hoş Geldin, Abdullah</Text>
+    <View style={[styles.container, {paddingTop: insets.top}]}>
+      <View style={styles.header}>
+        <Image source={require('../assets/logo.png')} style={styles.logo} />
+        <TouchableOpacity
+          style={styles.profile}
+          onPress={() => navigation.navigate('Profile')}>
+          <Image
+            source={require('../assets/profil.png')}
+            style={styles.profileImage}
+          />
+        </TouchableOpacity>
+      </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardLabel}>Bu Ay Toplam Harcama</Text>
-            <Text style={styles.cardAmount}>3.650₺</Text>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, {width: '65%'}]} />
+      <View style={styles.content}>
+        <Text style={styles.welcome}>Hoş Geldin, İrem 👋</Text>
+
+        <View style={styles.mainCard}>
+          <Text style={styles.cardTitle}>Bu Ay Toplam Harcama</Text>
+          <Text style={styles.money}>
+            {totalExpense.toLocaleString('tr-TR')}₺
+          </Text>
+          <View style={styles.percentBox}>
+            <Text style={styles.percentText}>%18</Text>
+            <Text style={styles.percentSubText}>Geçen aya göre artış</Text>
+          </View>
+        </View>
+
+        <View style={styles.graphCard}>
+          <View style={styles.graphHeaderRow}>
+            <Text style={styles.graphTitle}>Son 7 Günlük Harcama</Text>
+            <View style={styles.graphBadge}>
+              <Text style={styles.graphBadgeText}>%6</Text>
+              <Text style={styles.graphBadgeSubText}>
+                Geçen haftaya göre azalış
+              </Text>
             </View>
           </View>
+          <Image
+            source={require('../assets/grafik.png')}
+            style={styles.graphImage}
+          />
+        </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardLabel}>Son 7 Günlük Harcama</Text>
-            <SpendingLineChart />
+        <View style={styles.recentPurchaseCard}>
+          <View style={styles.purchaseLeft}>
+            <Text style={styles.purchaseCardTitle}>Son Satın Alım</Text>
+            <Text style={styles.purchaseItem}>PUBG Mobile-Lootbox</Text>
+            <Text style={styles.purchasePrice}>50 ₺</Text>
           </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardLabel}>Son Satın Alım</Text>
-            <View style={styles.lastPurchase}>
-              <Image source={lastGame.image} style={styles.lastGameIcon} />
-              <View style={styles.lastPurchaseInfo}>
-                <Text style={styles.lastPurchaseTitle}>
-                  {lastGame.name} - Lootbox
-                </Text>
-                <Text style={styles.lastPurchasePrice}>50₺</Text>
-              </View>
-            </View>
+          <View style={styles.purchaseRight}>
+            <Image
+              source={require('../assets/pubg.png')}
+              style={styles.purchaseImage}
+            />
+            <Text style={styles.purchaseTime}>2 saat önce</Text>
           </View>
+        </View>
 
-          <View style={styles.warningBox}>
+        <View style={styles.bottomRow}>
+          <View style={styles.warningCard}>
             <Text style={styles.warningIcon}>!</Text>
             <Text style={styles.warningText}>
-              Bu ay harcama limitinize yaklaşıyorsunuz.
+              Bu hafta yaptığın lootbox harcemalarıyla, hedefinin %18'ini
+              kaybettin.
             </Text>
           </View>
-        </ScrollView>
-      </LogoPageLayout>
-
-      <Pressable
-        style={styles.fab}
-        onPress={() => navigation.navigate('AddExpenseGame')}>
-        <Text style={styles.fabIcon}>+</Text>
-      </Pressable>
+          <Pressable
+            style={styles.addButton}
+            onPress={() => navigation.navigate('AddExpenseGame')}>
+            <Text style={styles.plus}>+</Text>
+          </Pressable>
+        </View>
+      </View>
 
       <BottomTabBar
         activeTab="home"
@@ -82,125 +114,216 @@ export function HomeScreen({navigation}: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: abdullahColors.headerGray,
+    backgroundColor: colors.background,
   },
-  scrollContent: {
-    paddingBottom: 100,
-    paddingTop: 16,
-  },
-  greeting: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    paddingHorizontal: 20,
-    marginBottom: 16,
-  },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    marginHorizontal: 20,
-    marginBottom: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  cardLabel: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: 8,
-    fontWeight: '500',
-  },
-  cardAmount: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: colors.text,
-    marginBottom: 12,
-  },
-  progressTrack: {
-    height: 6,
-    backgroundColor: colors.border,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 3,
-  },
-  lastPurchase: {
+  header: {
+    height: 110,
+    backgroundColor: colors.headerGray,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    position: 'relative',
+    justifyContent: 'center',
   },
-  lastGameIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+  logo: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+    marginTop: 20,
+    position: 'absolute',
   },
-  lastPurchaseInfo: {
+  profile: {
+    width: 55,
+    height: 55,
+    borderRadius: 27.5,
+    marginTop: 25,
+    position: 'absolute',
+    right: 25,
+    overflow: 'hidden',
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 27.5,
+  },
+  content: {
+    padding: 16,
+    paddingTop: 15,
     flex: 1,
+    justifyContent: 'space-between',
+    paddingBottom: 100,
   },
-  lastPurchaseTitle: {
-    fontSize: 15,
-    fontWeight: '600',
+  welcome: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 12,
     color: colors.text,
-    marginBottom: 4,
   },
-  lastPurchasePrice: {
+  mainCard: {
+    backgroundColor: colors.cardSecondary,
+    borderRadius: 25,
+    padding: 16,
+    height: 150,
+    justifyContent: 'space-between',
+  },
+  cardTitle: {
+    color: colors.card,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  money: {
+    color: colors.card,
+    fontSize: 40,
+    fontWeight: 'bold',
+  },
+  percentBox: {
+    backgroundColor: colors.badge,
+    alignSelf: 'flex-end',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  percentText: {
+    color: colors.card,
+    fontWeight: 'bold',
+    fontSize: 12,
+    marginRight: 5,
+  },
+  percentSubText: {
+    color: colors.card,
+    fontSize: 8,
+  },
+  graphCard: {
+    backgroundColor: colors.cardMuted,
+    borderRadius: 25,
+    padding: 15,
+    marginTop: 14,
+    height: 180,
+    overflow: 'hidden',
+  },
+  graphHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  graphTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.primary,
+    color: colors.text,
   },
-  warningBox: {
+  graphBadge: {
+    backgroundColor: colors.badge,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  graphBadgeText: {
+    color: colors.card,
+    fontWeight: '700',
+    fontSize: 12,
+    marginRight: 4,
+  },
+  graphBadgeSubText: {
+    color: colors.card,
+    fontSize: 8,
+  },
+  graphImage: {
+    width: '100%',
+    height: 300,
+    resizeMode: 'contain',
+    marginTop: -90,
+  },
+  recentPurchaseCard: {
+    backgroundColor: colors.cardMuted,
+    borderRadius: 25,
+    padding: 15,
+    marginTop: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  purchaseLeft: {
+    flex: 1,
+  },
+  purchaseCardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  purchaseItem: {
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  purchasePrice: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginTop: 1,
+  },
+  purchaseRight: {
+    alignItems: 'center',
+  },
+  purchaseImage: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    marginBottom: 2,
+  },
+  purchaseTime: {
+    fontSize: 10,
+    color: colors.textMuted,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 25,
+  },
+  warningCard: {
+    backgroundColor: colors.cardMuted,
+    borderRadius: 25,
+    padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginHorizontal: 20,
-    marginTop: 4,
-    padding: 12,
-    backgroundColor: '#FFF0F0',
-    borderRadius: 12,
+    flex: 1,
+    marginRight: 12,
+    height: 85,
   },
   warningIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.warning,
-    color: colors.card,
-    textAlign: 'center',
-    lineHeight: 24,
-    fontWeight: '700',
-    fontSize: 14,
-    overflow: 'hidden',
+    color: colors.primary,
+    fontSize: 34,
+    fontWeight: 'bold',
+    marginRight: 10,
   },
   warningText: {
-    flex: 1,
-    fontSize: 13,
+    fontSize: 10,
     color: colors.text,
-    lineHeight: 18,
+    flex: 1,
+    lineHeight: 13,
   },
-  fab: {
-    position: 'absolute',
-    right: 24,
-    bottom: 90,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  addButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
     backgroundColor: colors.primary,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
-  fabIcon: {
+  plus: {
     color: colors.card,
-    fontSize: 28,
-    fontWeight: '300',
-    lineHeight: 30,
+    fontSize: 42,
+    fontWeight: '600',
   },
 });

@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {BottomTabBar} from '../../../irem/components/BottomTabBar';
 import {GoalCard} from '../../components/GoalCard';
 import {LogoPageLayout} from '../../components/LogoPageLayout';
@@ -21,6 +22,8 @@ import {parsePrice, withCalculatedProgress} from '../../utils/goalHelpers';
 type Props = NativeStackScreenProps<RootStackParamList, 'Goals'>;
 
 export function GoalsScreen({navigation}: Props) {
+  const insets = useSafeAreaInsets();
+  const tabBarOffset = 85 + (insets.bottom > 0 ? insets.bottom : 15);
   const [goals, setGoals] = useState<Goal[]>(
     SAMPLE_GOALS.map(withCalculatedProgress),
   );
@@ -99,12 +102,14 @@ export function GoalsScreen({navigation}: Props) {
         onTabPress={tab => handleTabPress(navigation, tab)}
       />
 
-      <Pressable
-        style={styles.fab}
-        onPress={() => setNewGoalVisible(true)}>
-        <Text style={styles.fabIcon}>+</Text>
-      </Pressable>
-      <Text style={styles.fabLabel}>Yeni Hedef</Text>
+      <View style={[styles.fabContainer, {bottom: tabBarOffset + 12}]}>
+        <Pressable
+          style={styles.fab}
+          onPress={() => setNewGoalVisible(true)}>
+          <Text style={styles.fabIcon}>+</Text>
+        </Pressable>
+        <Text style={styles.fabLabel}>Yeni Hedef</Text>
+      </View>
 
       <NewGoalModal
         visible={newGoalVisible}
@@ -137,20 +142,22 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   scrollContent: {
-    paddingBottom: 160,
+    paddingBottom: 200,
   },
-  fab: {
+  fabContainer: {
     position: 'absolute',
     right: 24,
-    bottom: 100,
+    alignItems: 'center',
+    zIndex: 100,
+    elevation: 10,
+  },
+  fab: {
     width: 56,
     height: 56,
     borderRadius: 14,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 100,
-    elevation: 10,
     shadowColor: '#000',
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.25,
@@ -163,15 +170,10 @@ const styles = StyleSheet.create({
     lineHeight: 30,
   },
   fabLabel: {
-    position: 'absolute',
-    right: 24,
-    bottom: 78,
+    marginTop: 6,
     color: colors.primary,
     fontSize: 13,
     fontWeight: '700',
     textAlign: 'center',
-    width: 56,
-    zIndex: 100,
-    elevation: 10,
   },
 });

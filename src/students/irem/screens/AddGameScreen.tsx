@@ -1,68 +1,66 @@
 import React, {useState} from 'react';
 import {
+  Image,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RootStackParamList} from '../../abdullah/navigation/types';
-import {GAMES} from '../../abdullah/constants/games';
-import {LogoPageLayout} from '../../abdullah/components/LogoPageLayout';
-import {PrimaryButton} from '../../abdullah/components/PrimaryButton';
-import {colors as abdullahColors} from '../../abdullah/constants/colors';
-import {handleTabPress} from '../../abdullah/navigation/tabNavigation';
-import {BottomTabBar} from '../components/BottomTabBar';
-import {GameRow, SectionTitle} from '../components/GameGrid';
 import {colors} from '../constants/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddGame'>;
 
-const FREQUENT_GAMES = GAMES.slice(0, 3);
-
 export function AddGameScreen({navigation}: Props) {
-  const [gameName, setGameName] = useState('Candy Crush');
+  const insets = useSafeAreaInsets();
+  const [gameName, setGameName] = useState('');
+
+  const handleSave = () => {
+    if (gameName.trim().length === 0) {
+      return;
+    }
+    navigation.goBack();
+  };
 
   return (
-    <View style={styles.container}>
-      <LogoPageLayout>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}>
+    <View
+      style={[
+        styles.container,
+        {paddingTop: insets.top, paddingBottom: insets.bottom},
+      ]}>
+      <View style={styles.header}>
+        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backArrow}>〈</Text>
+        </Pressable>
+        <Image source={require('../assets/logo.png')} style={styles.logo} />
+      </View>
+
+      <View style={styles.content}>
+        <View style={styles.card}>
           <Text style={styles.title}>Oyun Ekle</Text>
+          <Text style={styles.subtitle}>
+            Listede olmayan bir oyunu buradan ekleyebilirsin.
+          </Text>
 
-          <SectionTitle title="En Sık Oynanan Oyunlar" />
-          <GameRow games={FREQUENT_GAMES} />
-
-          <View style={styles.inputGroup}>
-            <TextInput
-              style={styles.nameInput}
-              value={gameName}
-              onChangeText={setGameName}
-              placeholder="Oyun adı"
-              placeholderTextColor={colors.placeholder}
-            />
-          </View>
-
-          <Pressable style={styles.uploadArea}>
-            <Text style={styles.uploadIcon}>🖼</Text>
-            <Text style={styles.uploadText}>Görsel Ekle</Text>
-          </Pressable>
-
-          <PrimaryButton
-            title="Kaydet"
-            onPress={() => navigation.navigate('Home')}
-            style={styles.saveButton}
+          <TextInput
+            style={styles.input}
+            placeholder="Oyun adı"
+            placeholderTextColor={colors.textMuted}
+            value={gameName}
+            onChangeText={setGameName}
           />
-        </ScrollView>
-      </LogoPageLayout>
 
-      <BottomTabBar
-        activeTab="home"
-        onTabPress={tab => handleTabPress(navigation, tab)}
-      />
+          <Pressable
+            style={[styles.saveButton, !gameName.trim() && styles.saveButtonDisabled]}
+            onPress={handleSave}
+            disabled={!gameName.trim()}>
+            <Text style={styles.saveButtonText}>Kaydet</Text>
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 }
@@ -70,56 +68,83 @@ export function AddGameScreen({navigation}: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: abdullahColors.headerGray,
+    backgroundColor: colors.background,
+  },
+  header: {
+    height: 110,
+    backgroundColor: colors.headerGray,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+    marginTop: 20,
+    position: 'absolute',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    marginTop: 20,
+    padding: 10,
+    zIndex: 10,
+  },
+  backArrow: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: colors.text,
   },
   content: {
-    paddingBottom: 100,
-    paddingTop: 16,
+    padding: 16,
+    flex: 1,
+  },
+  card: {
+    backgroundColor: colors.cardMuted,
+    borderRadius: 30,
+    padding: 24,
+    marginTop: 16,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: 'bold',
     color: colors.text,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 8,
   },
-  inputGroup: {
-    paddingHorizontal: 20,
+  subtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
     marginBottom: 24,
   },
-  nameInput: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 14,
+  input: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
     color: colors.text,
-    backgroundColor: colors.card,
-  },
-  uploadArea: {
-    alignSelf: 'center',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 32,
-    backgroundColor: colors.card,
-  },
-  uploadIcon: {
-    fontSize: 36,
-    marginBottom: 8,
-  },
-  uploadText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '500',
+    marginBottom: 24,
   },
   saveButton: {
-    marginTop: 8,
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  saveButtonDisabled: {
+    backgroundColor: colors.badge,
+  },
+  saveButtonText: {
+    color: colors.card,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });

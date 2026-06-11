@@ -10,9 +10,10 @@ export type RootStackParamList = {
   PasswordSuccess: undefined;
   GameSelection: undefined;
   FinancialInput: {selectedGames: string[]};
-  Home: undefined;
+  Home: {newExpense?: number} | undefined;
   AddExpenseGame: undefined;
   CategorySelection: {gameId: string; gameName: string};
+  AddAmount: {gameId: string; gameName: string; category: string};
   AddGame: undefined;
   Goals: undefined;
   Analysis: undefined;

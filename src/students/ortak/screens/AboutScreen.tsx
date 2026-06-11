@@ -26,13 +26,13 @@ export function AboutScreen({navigation}: Props) {
       </Text>
 
       <Text style={styles.teamTitle}>Geliştirme Ekibi</Text>
-      <Text style={styles.teamMember}>Prof. Dr. Erkan Şahin</Text>
+      <Text style={styles.teamMember}>Prof. Dr. Güldem Alev Özkök</Text>
       <Text style={styles.teamMember}>Abdullah Başpınar</Text>
       <Text style={styles.teamMember}>Feyza Dönmez</Text>
       <Text style={styles.teamMember}>İrem Yılmaz</Text>
       <Text style={styles.teamMember}>Mustafa Değer</Text>
 
-      <Text style={styles.copyright}>© 2024 Lootix. Tüm hakları saklıdır.</Text>
+      <Text style={styles.copyright}>© 2026 Lootix. Tüm hakları saklıdır.</Text>
     </ScrollView>
   );
 }

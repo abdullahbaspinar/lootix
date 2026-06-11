@@ -1,87 +1,74 @@
 import React, {useState} from 'react';
 import {
-  ScrollView,
+  Image,
   StyleSheet,
   Text,
-  TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RootStackParamList} from '../../abdullah/navigation/types';
-import {PrimaryButton} from '../../abdullah/components/PrimaryButton';
-import {ScreenHeader} from '../../abdullah/components/ScreenHeader';
-import {handleTabPress} from '../../abdullah/navigation/tabNavigation';
-import {BottomTabBar} from '../components/BottomTabBar';
+import {CATEGORIES} from '../constants/categories';
 import {colors} from '../constants/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CategorySelection'>;
 
-const CATEGORIES = [
-  {id: 'lootbox', name: 'Lootbox', icon: '🎁', defaultAmount: '200'},
-  {id: 'skin', name: 'Skin', icon: '👕', defaultAmount: ''},
-  {id: 'battlepass', name: 'Battle Pass', icon: '🎫', defaultAmount: ''},
-  {id: 'other', name: 'Diğer', icon: '📦', defaultAmount: ''},
-];
-
 export function CategorySelectionScreen({navigation, route}: Props) {
-  const {gameName} = route.params;
-  const [amounts, setAmounts] = useState<Record<string, string>>({
-    lootbox: '200',
-    skin: '',
-    battlepass: '',
-    other: '',
-  });
+  const insets = useSafeAreaInsets();
+  const {gameId, gameName} = route.params;
+  const [selectedCategory, setSelectedCategory] = useState('Lootbox');
 
-  const updateAmount = (id: string, value: string) => {
-    setAmounts(prev => ({...prev, [id]: value}));
+  const handleConfirm = () => {
+    navigation.navigate('AddAmount', {
+      gameId,
+      gameName,
+      category: selectedCategory,
+    });
   };
 
-  const hasAmount = Object.values(amounts).some(v => v.trim() !== '');
-
   return (
-    <View style={styles.container}>
-      <ScreenHeader
-        onBack={() => navigation.goBack()}
-        showLogo={false}
-      />
-      <Text style={styles.title}>Kategori Seç</Text>
-      <Text style={styles.subtitle}>{gameName}</Text>
+    <View
+      style={[
+        styles.container,
+        {paddingTop: insets.top, paddingBottom: insets.bottom},
+      ]}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButtonAbsolute}
+          onPress={() => navigation.goBack()}>
+          <Text style={styles.backArrow}>〈</Text>
+        </TouchableOpacity>
+        <Image source={require('../assets/logo.png')} style={styles.logo} />
+      </View>
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionTitle}>Harcama Türü</Text>
-
-        {CATEGORIES.map(category => (
-          <View key={category.id} style={styles.categoryRow}>
-            <Text style={styles.categoryIcon}>{category.icon}</Text>
-            <Text style={styles.categoryName}>{category.name}</Text>
-            <View style={styles.amountBox}>
-              <TextInput
-                style={styles.amountInput}
-                value={amounts[category.id]}
-                onChangeText={v => updateAmount(category.id, v)}
-                keyboardType="numeric"
-                placeholder="000"
-                placeholderTextColor={colors.placeholder}
-              />
-              <Text style={styles.currency}>₺</Text>
+      <View style={styles.content}>
+        <View style={styles.categoryMainWhiteCard}>
+          <View>
+            <Text style={styles.categoryMainTitle}>Kategori Seç</Text>
+            <Text style={styles.categorySubTitle}>Harcama Türü</Text>
+            <View style={styles.categoryList}>
+              {CATEGORIES.map(cat => {
+                const isSelected = selectedCategory === cat.name;
+                return (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[styles.categoryRow, isSelected && styles.selectedRow]}
+                    onPress={() => setSelectedCategory(cat.name)}>
+                    <View style={styles.categoryInfo}>
+                      <Image source={cat.image} style={styles.categoryIcon} />
+                      <Text style={styles.categoryName}>{cat.name}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
-        ))}
-
-        <PrimaryButton
-          title="Kaydet"
-          onPress={() => navigation.navigate('Home')}
-          disabled={!hasAmount}
-          style={styles.saveButton}
-        />
-      </ScrollView>
-
-      <BottomTabBar
-        activeTab="home"
-        onTabPress={tab => handleTabPress(navigation, tab)}
-      />
+          <TouchableOpacity style={styles.saveButton} onPress={handleConfirm}>
+            <Text style={styles.saveButtonText}>Kaydet</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
@@ -91,76 +78,102 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: 4,
+  header: {
+    height: 110,
+    backgroundColor: colors.headerGray,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    position: 'relative',
+    justifyContent: 'center',
   },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 20,
+  logo: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+    marginTop: 20,
+    position: 'absolute',
+  },
+  backButtonAbsolute: {
+    position: 'absolute',
+    left: 20,
+    marginTop: 20,
+    padding: 10,
+    zIndex: 10,
+  },
+  backArrow: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: colors.text,
   },
   content: {
-    paddingBottom: 100,
+    padding: 16,
+    paddingTop: 15,
+    flex: 1,
   },
-  sectionTitle: {
-    fontSize: 15,
+  categoryMainWhiteCard: {
+    backgroundColor: colors.cardMuted,
+    borderRadius: 30,
+    padding: 20,
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  categoryMainTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  categorySubTitle: {
+    fontSize: 16,
     fontWeight: '700',
     color: colors.text,
-    paddingHorizontal: 24,
-    marginBottom: 16,
+    marginBottom: 15,
+  },
+  categoryList: {
+    marginBottom: 10,
   },
   categoryRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.card,
-    marginHorizontal: 20,
     marginBottom: 12,
-    borderRadius: 14,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
+    padding: 12,
+    borderRadius: 20,
+    backgroundColor: 'transparent',
   },
-  categoryIcon: {
-    fontSize: 22,
-    marginRight: 12,
+  selectedRow: {
+    backgroundColor: 'rgba(191, 9, 9, 0.08)',
   },
-  categoryName: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  amountBox: {
+  categoryInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    minWidth: 90,
   },
-  amountInput: {
-    flex: 1,
-    paddingVertical: 8,
-    fontSize: 15,
-    fontWeight: '600',
+  categoryIcon: {
+    width: 45,
+    height: 45,
+    resizeMode: 'contain',
+    marginRight: 15,
+  },
+  categoryName: {
+    fontSize: 16,
+    fontWeight: '700',
     color: colors.text,
-    textAlign: 'right',
-  },
-  currency: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginLeft: 4,
   },
   saveButton: {
-    marginTop: 16,
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 40,
+    elevation: 3,
+  },
+  saveButtonText: {
+    color: colors.card,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
